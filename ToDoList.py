@@ -17,6 +17,13 @@ class ToDoList():
             self.c.execute("SELECT * FROM {}".format(self.table_name))
             return self.c.fetchall()
 
+    def read_todays_tasks(self):
+        print('Reading todays tasks')
+        with self.conn:
+            self.c.execute(
+                "SELECT * FROM ToDoList WHERE date = ?", (str(date.today()),))
+            return self.c.fetchall()
+
     def append_row(self, *vals):
         self.vals = []
         for i in vals:
@@ -25,6 +32,16 @@ class ToDoList():
         self.c.execute("""
                 INSERT INTO ToDoList(date, task, subtasks, completed) VALUES({})
                 """.format(self.vals[:-1]))
+        self.conn.commit()
+
+    def add_task_today(self, task):
+        self.task = "'" + task + "'"
+        # self.c.execute("INSERT INTO ToDoList(date, task, subtasks, completed) VALUES(? {} ? ?)".format(
+        #     self.task), (str(date.today()), "'None'", "'False'"))
+        self.c.execute("""
+                    INSERT INTO ToDoList(date, task, subtasks, completed) VALUES
+                    ({})
+                    """.format("'" + str(date.today()) + "', " + self.task + ", 'None'" + ", 'False'"))
         self.conn.commit()
 
     def change_row_to_complete(self, row_id):
@@ -55,3 +72,8 @@ class ToDoList():
                     """.format(self.subtasks, row_id))
         # return self.subtasks
         # pass
+
+    def remove_task(self, row_id):
+        with self.conn:
+            self.c.execute("DELETE FROM ToDoList WHERE id=?", (row_id,))
+        pass
