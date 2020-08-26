@@ -37,10 +37,13 @@ def home():
         print(e)
 
 
-@app.route("/query")
+@app.route("/complete", methods=["POST"])
 def query():
-    args = request.args
-    print(args)
+    # args = request.args
+    # print(args)
+    data = request.get_json()
+    print(data['id'])
+    todolist.change_row_to_complete(data['id'])
     return "No query received", 200
 
 

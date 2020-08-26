@@ -35,7 +35,7 @@ class ToDoList():
         self.conn.commit()
 
     def add_task_today(self, task):
-        self.task = "'" + task + "'"
+        self.task = "'" + str(task) + "'"
         # self.c.execute("INSERT INTO ToDoList(date, task, subtasks, completed) VALUES(? {} ? ?)".format(
         #     self.task), (str(date.today()), "'None'", "'False'"))
         self.c.execute("""
@@ -62,7 +62,7 @@ class ToDoList():
 
     def append_to_subtask(self, subtask, row_id):
         self.c.execute("""
-                        SELECT subtasks FROM ToDoList WHERE id = {}
+                        SELECT subtasks FROM ToDoList WHERE id = {} 
                     """.format(row_id))
         # self.subtasks = self.c.fetchone()
         self.subtasks = self.c.fetchone()[0]
