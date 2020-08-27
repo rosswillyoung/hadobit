@@ -1,4 +1,5 @@
 from ToDoList import ToDoList
+from ListTable import ListTable
 import sqlite3
 from datetime import date, timedelta
 import flask
@@ -42,9 +43,20 @@ def query():
     # args = request.args
     # print(args)
     data = request.get_json()
-    print(data['id'])
+    # print(data['id'])
     todolist.change_row_to_complete(data['id'])
-    return "No query received", 200
+    # return "No query received", 200
+    return "Row Completed"
+
+
+@app.route("/createlist", methods=["POST"])
+def create_list():
+    data = request.get_json()
+    print(data["tracker"])
+    print(data["tracker_items"])
+    new_tracker = ListTable(data["tracker"], data["tracker_items"])
+    new_tracker.create_table()
+    return "None"
 
 
 # print(jsonify(list_to_json))

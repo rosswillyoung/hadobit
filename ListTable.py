@@ -1,7 +1,11 @@
+import sqlite3
+
+
 class ListTable:
 
-    def __init__(self, conn, table_name, *args):
-        self.conn = conn
+    def __init__(self, table_name, *args):
+        self.conn = sqlite3.connect("hadobit_db.db", check_same_thread=False)
+        self.c = self.conn.cursor()
         self.table_name = table_name
         self.columns = ''
         if len(args) == 0:
@@ -13,23 +17,22 @@ class ListTable:
         self.add_type_to_columns()
 
     def create_table(self):
-        c = self.conn.cursor()
-        c.execute("""
+        self.c.execute("""
                 CREATE TABLE IF NOT EXISTS {}({})
                 """.format(self.table_name, self.columns_with_type))
 
     def append_to_table(self, values):
-        c = self.conn.cursor()
         self.vals = []
         for i in values:
             self.vals.append("'" + i + "',")
         self.vals = ' '.join(self.vals)
         # print("""INSERT INTO {}({}) VALUES({})""".format(
         #     self.table_name, self.columns[:-2], self.vals[:-1]))
-        c.execute("""
+        self.c.execute("""
             INSERT INTO {}({}) VALUES({})
         """.format(self.table_name, self.columns, self.vals[:-1]))
 
+    # Adds an INT primary key and BLOB type to the rest of the columnns.
     def add_type_to_columns(self):
         self.column_list = self.columns.split(', ')
         self.column_list = self.column_list[:-1]
@@ -37,27 +40,20 @@ class ListTable:
         self.columns_with_type = []
         for i in self.column_list:
             self.columns_with_type.append(i + " BLOB")
-            # try:
-            #     float(i)
-            #     self.columns_with_type.append(i + " INTEGER")
-            # except ValueError:
-            #     self.columns_with_type.append(i + " TEXT")
         self.columns_with_type = 'id INTEGER PRIMARY KEY, ' + ', '.join(
             self.columns_with_type)
         return self.columns_with_type
 
     def read_all_rows(self):
-        c = self.conn.cursor()
-        c.execute("SELECT * FROM {}".format(self.table_name))
+        self.c.execute("SELECT * FROM {}".format(self.table_name))
         # print(c.description)
-        return c.fetchall()
+        return self.c.fetchall()
 
     def get_column_names(self):
-        c = self.conn.cursor()
         # c.execute("SELECT * FROM {}".format(self.table_name))
-        c.execute("PRAGMA table_info({})".format(self.table_name))
+        self.c.execute("PRAGMA table_info({})".format(self.table_name))
         # print(c.fetchall())
-        for i in c.fetchall():
+        for i in self.c.fetchall():
             # print(i[1])
             if i[1] == "id":
                 pass
@@ -71,7 +67,11 @@ class ListTable:
         # print(self.columns)
         return self.columns
 
+    def read_column_names(self):
+        self.c.execute("PRAGMA table_info({})".format(self.table_name))
+        for i in self.c.fetchall():
+            print(i)
+
     def add_column_to_table(self, column, column_type):
-        c = self.conn.cursor()
-        c.execute("ALTER TABLE {} ADD COLUMN {} {}".format(self.table_name, column, column_type),
-                  )
+        self.c.execute("ALTER TABLE {} ADD COLUMN {} {}".format(self.table_name, column, column_type),
+                       )
