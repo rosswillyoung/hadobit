@@ -59,5 +59,14 @@ def create_list():
     return "None"
 
 
+@app.route("/addsubtask", methods=["POST"])
+def add_subtask():
+    data = request.get_json()
+    # print(data["id"])
+    print(data["subtask"])
+    todolist.append_to_subtask(data["subtask"], data["id"])
+    return "None"
+
+
 # print(jsonify(list_to_json))
 app.run()

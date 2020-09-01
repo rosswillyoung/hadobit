@@ -18,7 +18,7 @@ class ToDoList():
             return self.c.fetchall()
 
     def read_todays_tasks(self):
-        print('Reading todays tasks')
+        # print('Reading todays tasks')
         with self.conn:
             self.c.execute(
                 "SELECT * FROM ToDoList WHERE date = ?", (str(date.today()),))
@@ -35,13 +35,13 @@ class ToDoList():
         self.conn.commit()
 
     def add_task_today(self, task):
-        self.task = "'" + str(task) + "'"
+        # self.task = "'" + str(task) + "'"
+        today = str(date.today())
         # self.c.execute("INSERT INTO ToDoList(date, task, subtasks, completed) VALUES(? {} ? ?)".format(
         #     self.task), (str(date.today()), "'None'", "'False'"))
-        self.c.execute("""
-                    INSERT INTO ToDoList(date, task, subtasks, completed) VALUES
-                    ({})
-                    """.format("'" + str(date.today()) + "', " + self.task + ", 'None'" + ", 'False'"))
+        self.c.execute(
+            f"INSERT INTO ToDoList(date, task, completed) VALUES('{today}', '{task}', 'False')")
+        # .format("'" + str(date.today()) + "', " + self.task + ", ''" + ", 'False'"))
         self.conn.commit()
 
     def change_row_to_complete(self, row_id):
@@ -54,10 +54,13 @@ class ToDoList():
 
     def add_subtask(self, subtask, row_id):
         self.subtask = "'" + subtask + "'"
-        self.c.execute("""
-                        UPDATE ToDoList SET subtasks = {} WHERE id = {}
-                        """.format(self.subtask, row_id))
+        # self.c.execute("""
+        #                 UPDATE ToDoList SET subtasks = {} WHERE id = {}
+        #                 """.format(self.subtask, row_id))
+        self.c.execute(
+            f"""UPDATE ToDoList SET subtasks = {self.subtask} WHERE id = {row_id}""")
         self.conn.commit()
+        print("added subtask")
         pass
 
     def append_to_subtask(self, subtask, row_id):
@@ -65,11 +68,15 @@ class ToDoList():
                         SELECT subtasks FROM ToDoList WHERE id = {} 
                     """.format(row_id))
         # self.subtasks = self.c.fetchone()
-        self.subtasks = self.c.fetchone()[0]
-        self.subtasks = "'" + self.subtasks + ", " + subtask + "'"
-        self.c.execute("""
-                    UPDATE ToDoList SET subtasks = {} WHERE id = {}
-                    """.format(self.subtasks, row_id))
+        try:
+            self.subtasks = ", ".join(self.c.fetchall()[0])
+            self.subtasks = "'" + self.subtasks + ", " + subtask + "'"
+            self.c.execute("""
+                        UPDATE ToDoList SET subtasks = {} WHERE id = {}
+                        """.format(self.subtasks, row_id))
+        except TypeError:
+            self.c.execute(
+                f"UPDATE ToDoList SET subtasks = '{subtask}' WHERE id ={row_id}")
         # return self.subtasks
         # pass
 
